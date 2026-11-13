@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>EduMindAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Bricolage+Grotesque:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky header, scrolling view, bottom tab bar; one column on phones */
+:root{
+  --bg:#f3f3fa; --card:#ffffff; --ink:#1b1b2f; --mute:#6a6a85; --line:#e1e1ee;
+  --accent:#5b3fd6; --accent-ink:#ffffff; --soft:#ece8fd;
+  --good:#12805c; --warn:#b26a00; --bad:#c0344a;
+  --display:'Bricolage Grotesque','DM Sans',system-ui,sans-serif;
+  --body:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12121f; --card:#1c1c2e; --ink:#ececf8; --mute:#9d9db8; --line:#2c2c44;
+  --accent:#9b86ff; --accent-ink:#12121f; --soft:#2a2547; --good:#3ecf9a; --warn:#f0b03c; --bad:#ff7a8e; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#12121f; --card:#1c1c2e; --ink:#ececf8; --mute:#9d9db8; --line:#2c2c44;
+  --accent:#9b86ff; --accent-ink:#12121f; --soft:#2a2547; --good:#3ecf9a; --warn:#f0b03c; --bad:#ff7a8e; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+header{display:flex;gap:10px;align-items:center;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));background:var(--card);border-bottom:1px solid var(--line)}
+.logo{font-family:var(--display);font-weight:700;font-size:19px;color:var(--accent);white-space:nowrap}
+#q{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.ib{border:1px solid var(--line);background:var(--card);border-radius:12px;width:40px;height:40px;font-size:18px;cursor:pointer}
+main{flex:1;overflow-y:auto;padding:16px 16px 24px;max-width:760px;width:100%;margin:0 auto}
+nav{display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:9px 2px 8px;color:var(--mute);font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--accent);font-weight:700}
+h1{font-family:var(--display);font-size:24px;margin:0 0 4px}
+h2{font-family:var(--display);font-size:18px;margin:0 0 8px}
+.sub{color:var(--mute);margin:0 0 14px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.stat b{display:block;font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}
+.stat span{color:var(--mute);font-size:13px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer}
+.btn.alt{background:var(--soft);color:var(--accent)}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.btn.bad{background:none;color:var(--bad);border:1px solid var(--line)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px}
+.in{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);margin-bottom:8px}
+textarea.in{min-height:120px;resize:vertical}
+label{font-size:13px;color:var(--mute);display:block;margin-bottom:3px}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--soft);color:var(--accent);font-weight:700}
+.pill.bad{background:none;border:1px solid var(--bad);color:var(--bad)}
+.pill.good{background:none;border:1px solid var(--good);color:var(--good)}
+.item{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .t{flex:1;min-width:0;cursor:pointer}
+.item .t b{display:block;overflow-wrap:anywhere}
+.item .t small{color:var(--mute)}
+.done b{text-decoration:line-through;color:var(--mute)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
+.tabs button{border:1px solid var(--line);background:var(--card);padding:7px 14px;border-radius:99px;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.out{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px}
+.flash{min-height:190px;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-size:20px;font-family:var(--display);cursor:pointer;background:var(--soft);border-radius:16px;margin-bottom:12px;overflow-wrap:anywhere}
+.opt{display:block;width:100%;text-align:left;padding:11px 13px;margin-bottom:8px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer}
+.opt.right{border-color:var(--good);background:none;box-shadow:inset 0 0 0 1px var(--good)}
+.opt.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.msg{padding:10px 12px;border-radius:14px;margin-bottom:8px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:92%}
+.msg.u{background:var(--accent);color:var(--accent-ink);margin-left:auto}
+.msg.a{background:var(--card);border:1px solid var(--line)}
+.slide{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;background:var(--card)}
+.note{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;z-index:9;max-width:90%}
+.bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){main{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">EduMindAI</span>
+  <input id="q" type="search" placeholder="Search notes &amp; flashcards" aria-label="Search notes and flashcards">
+  <button class="ib" id="themeBtn" aria-label="Change theme">◐</button>
+</header>
+<main id="view"></main>
+<nav id="nav"></nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<script>
+(function(){
+'use strict';
+/* ---------- storage (never blocks the app if storage is missing) ---------- */
+var KEY='edumindai_v1', mem=null;
+var S={notes:[],cards:[],tasks:[],scores:[],chat:[],profile:{name:'Ume Kalsoom Mehran Poto',roll:'60',uni:'',course:''},theme:'auto'};
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);for(var k in o)S[k]=o[k];}}catch(e){if(mem)S=mem;}}
+function save(){mem=S;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+load();
+var uid=function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var $=function(s,r){return (r||document).querySelector(s)};
+var DAY=864e5;
+
+/* ---------- AI + downloads (light up only when the host provides them) ---------- */
+var AI=null, DL=null;
+try{
+  if(window.claude&&claude.use){
+    claude.use('sample').then(function(s){AI=s||null;if(tab==='ai'||tab==='quiz'||tab==='notes')render();}).catch(function(){});
+    claude.use('downloads').then(function(d){DL=d||null;}).catch(function(){});
+  }
+}catch(e){}
+function toast(t){var d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove()},2400)}
+function aiGate(){return AI?'':'<div class="note">AI features need this app to be opened from your Claude link while you are signed in. Everything else works without it.</div>'}
+function aiErr(e){toast(e&&e.code==='rate_limited'?'Too many requests. Wait a minute and try again.':e&&e.code==='not_granted'?'AI access was not allowed.':'AI could not answer. Check your internet and try again.')}
+async function ask(prompt,on){
+  var r=await AI(prompt,{modelTier:'default',cache:false,onText:on?function(x){on(x.text)}:undefined});
+  return r.text;
+}
+async function askJSON(prompt){return await AI.json(prompt,{modelTier:'default',cache:false});}
+var LANGNOTE='Write in clear simple English. If the student writes in Urdu or Roman Urdu, reply in the same language. ';
+
+/* ---------- state ---------- */
+var tab='home', sub={}, ui={};
+var TABS=[
+ ['home','Home','<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>'],
+ ['notes','Notes','<svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg>'],
+ ['cards','Cards','<svg viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M7 3h13a1 1 0 011 1v11"/></svg>'],
+ ['quiz','Quiz','<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5v.01"/></svg>'],
+ ['ai','AI','<svg viewBox="0 0 24 24"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></svg>']
+];
+function nav(){$('#nav').innerHTML=TABS.map(function(t){return '<button data-tab="'+t[0]+'" class="'+(tab===t[0]?'on':'')+'">'+t[2]+t[1]+'</button>'}).join('')}
+function render(){
+  nav();var v=$('#view');
+  try{ ({home:vHome,notes:vNotes,cards:vCards,quiz:vQuiz,ai:vAI,settings:vSettings})[tab](v); }
+  catch(e){v.innerHTML='<div class="card"><h2>Something went wrong</h2><p>'+esc(e.message)+'</p><button class="btn" data-act="resetui">Reload this screen</button></div>';}
+}
+function go(t){tab=t;ui={};$('#view').scrollTop=0;render()}
+
+/* ---------- HOME ---------- */
+function vHome(v){
+  var now=Date.now(), due=S.cards.filter(function(c){return c.due<=now}).length;
+  var open=S.tasks.filter(function(t){return !t.done});
+  var od=open.filter(function(t){return t.due&&new Date(t.due+'T23:59:59').getTime()<now}).length;
+  var last=S.scores.length?S.scores[S.scores.length-1]:null;
+  var tasks=S.tasks.slice().sort(function(a,b){return (a.done-b.done)||((a.due||'9')>(b.due||'9')?1:-1)});
+  v.innerHTML='<h1>Welcome'+(S.profile.name?', '+esc(S.profile.name.split(' ')[0]):'')+'</h1><p class="sub">Your study space. Everything is saved on this phone.</p>'
+  +'<div class="grid"><div class="stat"><b>'+S.notes.length+'</b><span>Notes</span></div><div class="stat"><b>'+due+'</b><span>Cards due today</span></div>'
+  +'<div class="stat"><b>'+open.length+'</b><span>Open assignments'+(od?' · '+od+' late':'')+'</span></div><div class="stat"><b>'+(last?last.pct+'%':'–')+'</b><span>Last quiz score</span></div></div>'
+  +(due?'<button class="btn" style="width:100%;margin-bottom:12px" data-go="cards">Study '+due+' due cards</button>':'')
+  +'<div class="card"><h2>Assignments</h2>'
+  +'<input class="in" id="tt" placeholder="What is due? e.g. Phonology assignment"><div class="row"><input class="in" id="ts" style="flex:1;min-width:120px" placeholder="Subject"><input class="in" id="td" type="date" style="flex:1;min-width:130px" aria-label="Due date"></div>'
+  +'<button class="btn" data-act="addTask">Add assignment</button>'
+  +(tasks.length?'<div style="margin-top:8px">'+tasks.map(function(t){
+      var late=!t.done&&t.due&&new Date(t.due+'T23:59:59').getTime()<now;
+      return '<div class="item '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' data-act="toggleTask" data-id="'+t.id+'" style="width:22px;height:22px;margin-top:2px" aria-label="Done"><div class="t"><b>'+esc(t.title)+'</b><small>'+esc(t.subj||'')+(t.due?' · due '+esc(t.due):'')+'</small> '+(late?'<span class="pill bad">Late</span>':'')+'</div><button class="btn bad sm" data-act="delTask" data-id="'+t.id+'" aria-label="Delete">✕</button></div>'}).join('')+'</div>':'<p class="sub" style="margin-top:10px">No assignments yet.</p>')
+  +'</div>'
+  +'<div class="card"><h2>Quick start</h2><div class="row"><button class="btn alt" data-go="notes">Write a note</button><button class="btn alt" data-go="ai">Make slides</button><button class="btn alt" data-go="quiz">Take a quiz</button><button class="btn ghost" data-go="settings">Settings</button></div></div>';
+}
+
+/* ---------- NOTES ---------- */
+function vNotes(v){
+  if(ui.edit){var n=S.notes.find(function(x){return x.id===ui.edit})||{id:ui.edit,title:'',subj:'',body:''};
+    v.innerHTML='<div class="row" style="justify-content:space-between;margin-bottom:8px"><button class="btn ghost sm" data-act="noteBack">← Back</button><div class="row"><button class="btn bad sm" data-act="noteDel">Delete</button></div></div>'
+    +'<input class="in" id="nt" placeholder="Title" value="'+esc(n.title)+'"><input class="in" id="ns" placeholder="Subject (e.g. Language Technology)" value="'+esc(n.subj)+'">'
+    +'<textarea class="in" id="nb" style="min-height:240px" placeholder="Write or paste your notes here">'+esc(n.body)+'</textarea>'
+    +'<button class="btn" data-act="noteSave" style="width:100%;margin-bottom:12px">Save note</button>'
+    +'<div class="card"><h2>AI helper</h2>'+aiGate()+'<div class="row"><button class="btn alt sm" data-ai="sum" '+(AI?'':'disabled')+'>Summarize</button><button class="btn alt sm" data-ai="urdu" '+(AI?'':'disabled')+'>Explain in Urdu</button><button class="btn alt sm" data-ai="cards" '+(AI?'':'disabled')+'>Make flashcards</button><button class="btn alt sm" data-ai="exam" '+(AI?'':'disabled')+'>Likely exam questions</button></div><div id="aiOut"></div></div>';
+    return;}
+  var q=(ui.q||'').toLowerCase(), list=S.notes.filter(function(n){return !q||(n.title+n.subj+n.body).toLowerCase().indexOf(q)>-1}).sort(function(a,b){return b.at-a.at});
+  v.innerHTML='<div class="row" style="justify-content:space-between;margin-bottom:10px"><h1>Notes</h1><button class="btn" data-act="noteNew">+ New note</button></div>'
+  +(list.length?'<div class="card">'+list.map(function(n){return '<div class="item"><div class="t" data-act="noteOpen" data-id="'+n.id+'"><b>'+esc(n.title||'Untitled')+'</b><small>'+esc(n.subj||'No subject')+' · '+esc((n.body||'').slice(0,70))+'</small></div></div>'}).join('')+'</div>':'<div class="card"><p class="sub">'+(q?'No notes match your search.':'No notes yet. Tap “New note” to start.')+'</p></div>');
+}
+async function noteAI(kind){
+  var b=$('#nb').value.trim(), out=$('#aiOut');
+  if(b.length<20){toast('Write a little more first.');return}
+  out.innerHTML='<div class="out">Working…</div>';
+  try{
+    if(kind==='cards'){
+      var r=await askJSON('From these notes make 8 to 12 study flashcards. Return JSON: {"cards":[{"front":"question or term","back":"short answer"}]}. Notes:\n'+b);
+      var cs=(r.cards||[]).filter(function(c){return c.front&&c.back});
+      cs.forEach(function(c){S.cards.push({id:uid(),f:c.front,b:c.back,subj:$('#ns').value,box:0,due:Date.now()})});save();
+      out.innerHTML='<div class="out">Added '+cs.length+' flashcards. Open the Cards tab to study them.</div>';return;}
+    var p={sum:'Summarize these notes as short bullet points for exam revision. ',urdu:'Explain these notes in simple Urdu (Urdu script), keeping technical English terms in brackets. ',exam:'Write 8 likely exam questions (mix of short and long) based on these notes, then give a one-line answer hint for each. '}[kind];
+    var t=await ask(LANGNOTE+p+'\n\nNotes:\n'+b,function(x){out.innerHTML='<div class="out">'+esc(x)+'</div>'});
+    out.innerHTML='<div class="out" dir="auto">'+esc(t)+'</div><div class="row" style="margin-top:8px"><button class="btn alt sm" data-act="saveAsNote">Save as new note</button></div>';ui.last=t;
+  }catch(e){out.innerHTML='';aiErr(e)}
+}
+
+/* ---------- FLASHCARDS ---------- */
+var INT=[0,1,3,7,14,30];
+function vCards(v){
+  var now=Date.now(),q=(ui.q||'').toLowerCase();
+  if(sub.cards==='study'){
+    var due=S.cards.filter(function(c){return c.due<=now});
+    if(!due.length){v.innerHTML='<div class="card"><h2>All done</h2><p>No cards are due right now.</p><button class="btn" data-act="cardsList">Back to cards</button></div>';return;}
+    var c=due[0];
+    v.innerHTML='<div class="row" style="justify-content:space-between;margin-bottom:8px"><button class="btn ghost sm" data-act="cardsList">← Back</button><span class="pill">'+due.length+' left</span></div>'
+    +'<div class="flash" data-act="flip" dir="auto">'+esc(ui.flip?c.b:c.f)+'</div>'
+    +(ui.flip?'<div class="row"><button class="btn bad" style="flex:1" data-act="rate" data-id="'+c.id+'" data-r="0">Again</button><button class="btn" style="flex:1" data-act="rate" data-id="'+c.id+'" data-r="1">Got it</button></div>':'<p class="sub" style="text-align:center">Tap the card to see the answer</p>');
+    return;}
+  var list=S.cards.filter(function(c){return !q||(c.f+c.b+(c.subj||'')).toLowerCase().indexOf(q)>-1});
+  var due2=S.cards.filter(function(c){return c.due<=now}).length;
+  v.innerHTML='<h1>Flashcards</h1><p class="sub">Cards you miss come back sooner. Cards you know come back later.</p>'
+  +'<button class="btn" style="width:100%;margin-bottom:12px" data-act="study" '+(due2?'':'disabled')+'>'+(due2?'Study '+due2+' due cards':'Nothing due right now')+'</button>'
+  +'<div class="card"><h2>Add a card</h2><input class="in" id="cf" placeholder="Front (question or term)"><input class="in" id="cb" placeholder="Back (answer)"><input class="in" id="cs" placeholder="Subject (optional)"><button class="btn" data-act="addCard">Add card</button></div>'
+  +'<div class="card"><h2>Make cards with AI</h2>'+aiGate()+'<input class="in" id="ct" placeholder="Topic, e.g. Machine translation"><button class="btn alt" data-act="genCards" '+(AI?'':'disabled')+'>Generate 10 cards</button></div>'
+  +'<div class="card"><h2>All cards ('+list.length+')</h2>'+(list.length?list.map(function(c){return '<div class="item"><div class="t"><b dir="auto">'+esc(c.f)+'</b><small dir="auto">'+esc(c.b)+(c.subj?' · '+esc(c.subj):'')+'</small></div><button class="btn bad sm" data-act="delCard" data-id="'+c.id+'" aria-label="Delete card">✕</button></div>'}).join(''):'<p class="sub">No cards yet.</p>')+'</div>';
+}
+
+/* ---------- QUIZ ---------- */
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function vQuiz(v){
+  var z=ui.quiz;
+  if(z&&z.i<z.qs.length){
+    var q=z.qs[z.i];
+    v.innerHTML='<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">Question '+(z.i+1)+' of '+z.qs.length+'</span><button class="btn ghost sm" data-act="quizStop">Stop</button></div>'
+    +'<div class="bar" style="margin-bottom:12px"><i style="width:'+(z.i/z.qs.length*100)+'%"></i></div>'
+    +'<div class="card"><h2 dir="auto">'+esc(q.q)+'</h2>'+q.o.map(function(o,k){var cls='';if(z.pick!=null){if(k===q.a)cls=' right';else if(k===z.pick)cls=' wrong'}return '<button class="opt'+cls+'" data-act="pick" data-k="'+k+'" dir="auto" '+(z.pick!=null?'disabled':'')+'>'+esc(o)+'</button>'}).join('')
+    +(z.pick!=null?'<div class="note">'+(z.pick===q.a?'Correct. ':'Not quite. ')+esc(q.e||'')+'</div><button class="btn" data-act="nextQ">'+(z.i+1<z.qs.length?'Next question':'See result')+'</button>':'')+'</div>';
+    return;}
+  if(z){var pct=Math.round(z.score/z.qs.length*100);
+    v.innerHTML='<div class="card"><h1>'+z.score+' / '+z.qs.length+'</h1><p class="sub">'+pct+'% correct</p><div class="bar" style="margin-bottom:14px"><i style="width:'+pct+'%"></i></div><button class="btn" data-act="quizReset">Back to quizzes</button></div>';return;}
+  var hist=S.scores.slice(-5).reverse();
+  v.innerHTML='<h1>Exam practice</h1><p class="sub">Test yourself before the real paper.</p>'
+  +'<div class="card"><h2>Quiz from my flashcards</h2><p class="sub">Works offline. Needs at least 4 cards.</p><button class="btn" data-act="cardQuiz" '+(S.cards.length>=4?'':'disabled')+'>Start (up to 10 questions)</button></div>'
+  +'<div class="card"><h2>AI quiz on any topic</h2>'+aiGate()+'<input class="in" id="qt" placeholder="Topic, e.g. Corpus linguistics"><select class="in" id="qn"><option>5</option><option selected>8</option><option>10</option></select><button class="btn" data-act="aiQuiz" '+(AI?'':'disabled')+'>Make quiz</button><div id="qs"></div></div>'
+  +(hist.length?'<div class="card"><h2>Recent scores</h2>'+hist.map(function(h){return '<div class="item"><div class="t"><b>'+h.pct+'%</b><small>'+esc(h.topic)+' · '+new Date(h.at).toLocaleDateString()+'</small></div></div>'}).join('')+'</div>':'');
+}
+
+/* ---------- AI: ask / english / slides ---------- */
+function vAI(v){
+  var t=sub.ai||'ask';
+  var head='<h1>AI tools</h1>'+aiGate()+'<div class="tabs">'+[['ask','Ask AI'],['eng','English'],['ppt','Slides']].map(function(x){return '<button data-sub="'+x[0]+'" class="'+(t===x[0]?'on':'')+'">'+x[1]+'</button>'}).join('')+'</div>';
+  if(t==='ask'){
+    v.innerHTML=head+'<div id="chat">'+(S.chat.length?S.chat.map(function(m){return '<div class="msg '+(m.r==='user'?'u':'a')+'" dir="auto">'+esc(m.c)+'</div>'}).join(''):'<p class="sub">Ask anything about your subjects. Urdu and English both work.</p>')+'</div>'
+    +'<textarea class="in" id="ci" style="min-height:70px" placeholder="Type your question"></textarea><div class="row"><button class="btn" data-act="send" '+(AI?'':'disabled')+'>Send</button><button class="btn ghost" data-act="clearChat">Clear chat</button></div>';
+  }else if(t==='eng'){
+    var m=ui.em||'fix';
+    v.innerHTML=head+'<div class="card"><div class="tabs">'+[['fix','Fix grammar'],['imp','Improve'],['word','Word meaning'],['tr','Urdu ⇄ English']].map(function(x){return '<button data-em="'+x[0]+'" class="'+(m===x[0]?'on':'')+'">'+x[1]+'</button>'}).join('')+'</div>'
+    +'<textarea class="in" id="ei" dir="auto" placeholder="'+(m==='word'?'Type a word':'Paste your text')+'"></textarea><button class="btn" data-act="eng" '+(AI?'':'disabled')+'>Go</button><div id="eo"></div></div>';
+  }else{
+    var d=ui.deck;
+    v.innerHTML=head+'<div class="card"><h2>PowerPoint maker</h2><label for="pt">Topic</label><input class="in" id="pt" placeholder="e.g. Machine Translation" value="'+esc(ui.ptopic||'')+'"><div class="row"><div style="flex:1"><label for="pn">Slides</label><select class="in" id="pn"><option>6</option><option selected>8</option><option>10</option><option>12</option></select></div><div style="flex:1"><label for="pc">Course (shown on title slide)</label><input class="in" id="pc" value="'+esc(S.profile.course||'')+'" placeholder="e.g. Language Technology"></div></div>'
+    +'<button class="btn" data-act="mkPPT" '+(AI?'':'disabled')+'>Create slides</button></div>'
+    +(d?'<div class="card"><h2>'+esc(d.title)+'</h2><p class="sub">Edit anything below, then download the .pptx file.</p>'+d.slides.map(function(s,i){return '<div class="slide"><input class="in" data-st="'+i+'" value="'+esc(s.title)+'" aria-label="Slide title"><textarea class="in" data-sb="'+i+'" style="min-height:110px" aria-label="Slide points">'+esc(s.bullets.join('\n'))+'</textarea></div>'}).join('')+'<button class="btn" data-act="dlPPT" style="width:100%">Download PowerPoint</button></div>':'');
+  }
+}
+async function sendChat(){
+  var inp=$('#ci'),txt=inp.value.trim();if(!txt)return;
+  S.chat.push({r:'user',c:txt});inp.value='';
+  var hist=S.chat.slice(-10).map(function(m){return {role:m.r==='user'?'user':'assistant',content:m.c}});
+  hist[0]={role:'user',content:'You are EduMindAI, a friendly study tutor for university students (BS English). '+LANGNOTE+'Keep answers clear and organised.\n\n'+hist[0].content};
+  if(hist[0].role!=='user'){hist.shift()}
+  S.chat.push({r:'ai',c:'…'});render();var box=$('#chat');
+  try{
+    var t=await AI(hist,{modelTier:'default',cache:false,onText:function(x){S.chat[S.chat.length-1].c=x.text;var el=box&&box.lastChild;if(el)el.textContent=x.text}});
+    S.chat[S.chat.length-1].c=t.text;
+  }catch(e){S.chat.pop();aiErr(e)}
+  save();render();
+}
+async function engGo(){
+  var t=$('#ei').value.trim(),m=ui.em||'fix',o=$('#eo');if(!t)return;
+  var p={fix:'Correct the grammar and spelling of this text. First give the corrected text, then list each change with a short reason.',imp:'Improve this text for clear, formal academic English. Give the improved version, then 3 short tips.',word:'Explain this English word: meaning in simple English, meaning in Urdu, part of speech, and 3 example sentences.',tr:'Translate this text: if it is Urdu translate to English, if English translate to Urdu (Urdu script). Give only the translation, then one short note on any tricky word.'}[m];
+  o.innerHTML='<div class="out">Working…</div>';
+  try{var r=await ask(p+'\n\n'+t,function(x){o.innerHTML='<div class="out" dir="auto">'+esc(x)+'</div>'});o.innerHTML='<div class="out" dir="auto">'+esc(r)+'</div>';}catch(e){o.innerHTML='';aiErr(e)}
+}
+async function mkPPT(){
+  var t=$('#pt').value.trim(),n=$('#pn').value;if(!t){toast('Type a topic first.');return}
+  S.profile.course=$('#pc').value.trim();save();ui.ptopic=t;
+  var b=$('[data-act=mkPPT]');b.disabled=true;b.textContent='Creating…';
+  try{
+    var r=await askJSON('Create a university presentation on "'+t+'" with exactly '+n+' content slides (do not include a title slide). Each slide: a short title and 3 to 5 concise bullet points (max 14 words each). Include an introduction slide, key ideas with examples, and a conclusion. Return JSON: {"title":"deck title","slides":[{"title":"","bullets":["",""]}]}');
+    var sl=(r.slides||[]).filter(function(s){return s.title&&s.bullets&&s.bullets.length});
+    if(!sl.length)throw new Error('empty');
+    ui.deck={title:r.title||t,slides:sl};
+  }catch(e){aiErr(e)}
+  render();
+}
+async function dlPPT(){
+  var d=ui.deck;if(!d)return;
+  document.querySelectorAll('[data-st]').forEach(function(el){d.slides[+el.dataset.st].title=el.value});
+  document.querySelectorAll('[data-sb]').forEach(function(el){d.slides[+el.dataset.sb].bullets=el.value.split('\n').map(function(x){return x.trim()}).filter(Boolean)});
+  if(!window.PptxGenJS){toast('PowerPoint tool did not load. Check your internet and reopen.');return}
+  if(!DL){toast('Downloads are not available here. Open the app from your Claude link.');return}
+  try{
+    var p=new PptxGenJS();p.layout='LAYOUT_16x9';var A='5B3FD6',INK='1B1B2F';
+    var s=p.addSlide();s.background={color:A};
+    s.addText(d.title,{x:.6,y:1.0,w:8.8,h:1.6,fontSize:38,bold:true,color:'FFFFFF',fontFace:'Calibri',valign:'middle'});
+    var info=[];if(S.profile.name)info.push('Name: '+S.profile.name);if(S.profile.roll)info.push('Roll No: '+S.profile.roll);if(S.profile.course)info.push('Course: '+S.profile.course);if(S.profile.uni)info.push(S.profile.uni);
+    s.addText(info.join('\n'),{x:.6,y:3.2,w:8.8,h:1.8,fontSize:18,color:'E8E3FF',fontFace:'Calibri',valign:'top'});
+    d.slides.forEach(function(sd,i){
+      var x=p.addSlide();x.background={color:'FFFFFF'};
+      x.addShape(p.ShapeType.rect,{x:0,y:0,w:10,h:1.05,fill:{color:A}});
+      x.addText(sd.title,{x:.5,y:.1,w:9,h:.85,fontSize:26,bold:true,color:'FFFFFF',fontFace:'Calibri',valign:'middle'});
+      x.addText(sd.bullets.map(function(b){return {text:b,options:{bullet:true,breakLine:true}}}),{x:.6,y:1.35,w:8.8,h:3.8,fontSize:20,color:INK,fontFace:'Calibri',valign:'top',paraSpaceAfter:10});
+      x.addText(String(i+2),{x:9.2,y:5.1,w:.6,h:.4,fontSize:12,color:'888888',align:'right'});
+    });
+    var buf=await p.write({outputType:'arraybuffer'});
+    await DL.save({filename:(d.title||'slides').replace(/[^\w\- ]+/g,'').trim().slice(0,60)+'.pptx',data:buf});
+    toast('PowerPoint saved.');
+  }catch(e){if(!(e&&e.code==='declined'))toast('Could not save the file.')}
+}
+
+/* ---------- SETTINGS ---------- */
+function vSettings(v){
+  var p=S.profile;
+  v.innerHTML='<div class="row" style="justify-content:space-between;margin-bottom:8px"><h1>Settings</h1><button class="btn ghost sm" data-go="home">Done</button></div>'
+  +'<div class="card"><h2>Your details</h2><p class="sub">Used on the title slide of your presentations.</p>'
+  +'<label for="pfn">Name</label><input class="in" id="pfn" value="'+esc(p.name)+'"><label for="pfr">Roll number</label><input class="in" id="pfr" value="'+esc(p.roll)+'"><label for="pfu">University</label><input class="in" id="pfu" value="'+esc(p.uni)+'"><button class="btn" data-act="saveProfile">Save details</button></div>'
+  +'<div class="card"><h2>Theme</h2><div class="row"><button class="btn alt" data-th="auto">Auto</button><button class="btn alt" data-th="light">Light</button><button class="btn alt" data-th="dark">Dark</button></div></div>'
+  +'<div class="card"><h2>Backup</h2><p class="sub">Your data lives on this phone only. Save a backup file so you never lose it.</p><div class="row"><button class="btn" data-act="backup">Save backup</button><button class="btn alt" data-act="restore">Restore backup</button></div><input type="file" id="rf" accept=".json,application/json" hidden></div>'
+  +'<div class="card"><h2>Not included yet</h2><p class="sub">User accounts, login, subscriptions, payments and an admin panel need a server. This version has none of them, so nothing here pretends to.</p></div>';
+}
+function applyTheme(){var r=document.documentElement;if(S.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',S.theme)}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-tab],[data-go],[data-sub],[data-em],[data-th],[data-ai],[data-act]');if(!el)return;
+  var D=el.dataset;
+  if(D.tab)return go(D.tab);
+  if(D.go)return go(D.go);
+  if(D.sub){sub.ai=D.sub;return render()}
+  if(D.em){ui.em=D.em;return render()}
+  if(D.th){S.theme=D.th;save();applyTheme();return toast('Theme: '+D.th)}
+  if(D.ai)return noteAI(D.ai);
+  var a=D.act,id=D.id;
+  switch(a){
+   case 'resetui':ui={};sub={};tab='home';return render();
+   case 'addTask':var t=$('#tt').value.trim();if(!t)return toast('Type the assignment name.');S.tasks.push({id:uid(),title:t,subj:$('#ts').value.trim(),due:$('#td').value,done:false});save();return render();
+   case 'toggleTask':S.tasks.forEach(function(x){if(x.id===id)x.done=!x.done});save();return render();
+   case 'delTask':S.tasks=S.tasks.filter(function(x){return x.id!==id});save();return render();
+   case 'noteNew':ui.edit=uid();return render();
+   case 'noteOpen':ui.edit=id;return render();
+   case 'noteBack':ui.edit=null;return render();
+   case 'noteSave':var n=S.notes.find(function(x){return x.id===ui.edit});if(!n){n={id:ui.edit};S.notes.push(n)}n.title=$('#nt').value.trim();n.subj=$('#ns').value.trim();n.body=$('#nb').value;n.at=Date.now();save();toast('Note saved.');return;
+   case 'noteDel':S.notes=S.notes.filter(function(x){return x.id!==ui.edit});save();ui.edit=null;return render();
+   case 'saveAsNote':S.notes.push({id:uid(),title:'AI: '+($('#nt').value||'note'),subj:$('#ns').value,body:ui.last||'',at:Date.now()});save();return toast('Saved as a new note.');
+   case 'addCard':var f=$('#cf').value.trim(),b=$('#cb').value.trim();if(!f||!b)return toast('Fill both front and back.');S.cards.push({id:uid(),f:f,b:b,subj:$('#cs').value.trim(),box:0,due:Date.now()});save();return render();
+   case 'delCard':S.cards=S.cards.filter(function(x){return x.id!==id});save();return render();
+   case 'study':sub.cards='study';ui.flip=false;return render();
+   case 'cardsList':sub.cards=null;return render();
+   case 'flip':ui.flip=true;return render();
+   case 'rate':S.cards.forEach(function(c){if(c.id===id){if(D.r==='1'){c.box=Math.min(5,c.box+1);c.due=Date.now()+INT[c.box]*DAY+(c.box===0?0:0);if(c.box===0)c.due=Date.now()}else{c.box=0;c.due=Date.now()+60000}}});
+      /* a missed card returns after a minute; a known card returns in 1+ days */
+      S.cards.forEach(function(c){if(c.id===id&&D.r==='1'&&c.box<1){c.box=1;c.due=Date.now()+DAY}});
+      save();ui.flip=false;return render();
+   case 'genCards':return genCards();
+   case 'cardQuiz':return startCardQuiz();
+   case 'aiQuiz':return startAIQuiz();
+   case 'pick':var z=ui.quiz;if(z.pick!=null)return;z.pick=+D.k;if(z.pick===z.qs[z.i].a)z.score++;return render();
+   case 'nextQ':z=ui.quiz;z.i++;z.pick=null;if(z.i>=z.qs.length){S.scores.push({pct:Math.round(z.score/z.qs.length*100),topic:z.topic,at:Date.now()});save()}return render();
+   case 'quizStop':case 'quizReset':ui.quiz=null;return render();
+   case 'send':return sendChat();
+   case 'clearChat':S.chat=[];save();return render();
+   case 'eng':return engGo();
+   case 'mkPPT':return mkPPT();
+   case 'dlPPT':return dlPPT();
+   case 'saveProfile':S.profile.name=$('#pfn').value.trim();S.profile.roll=$('#pfr').value.trim();S.profile.uni=$('#pfu').value.trim();save();return toast('Details saved.');
+   case 'backup':return backup();
+   case 'restore':var rf=$('#rf');rf.onchange=function(){var f=rf.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o||typeof o!=='object'||!Array.isArray(o.notes))throw 0;S=Object.assign(S,o);save();applyTheme();toast('Backup restored.');render()}catch(x){toast('That file is not a valid backup.')}};r.readAsText(f)};return rf.click();
+  }
+});
+$('#themeBtn').addEventListener('click',function(){S.theme=S.theme==='dark'?'light':S.theme==='light'?'auto':'dark';save();applyTheme();toast('Theme: '+S.theme)});
+$('#themeBtn').addEventListener('contextmenu',function(e){e.preventDefault();go('settings')});
+var hold;$('#themeBtn').addEventListener('touchstart',function(){hold=setTimeout(function(){go('settings')},700)},{passive:true});
+$('#themeBtn').addEventListener('touchend',function(){clearTimeout(hold)});
+$('#q').addEventListener('input',function(e){ui.q=e.target.value;if(tab!=='notes'&&tab!=='cards'&&ui.q)tab='notes';if(tab==='notes'||tab==='cards'){ui.edit=null;var v=$('#view');var keep=ui.q;render();ui.q=keep;}});
+
+async function genCards(){
+  var t=$('#ct').value.trim();if(!t)return toast('Type a topic.');
+  var b=$('[data-act=genCards]');b.disabled=true;b.textContent='Working…';
+  try{var r=await askJSON('Make 10 study flashcards on "'+t+'" for a university student. Return JSON: {"cards":[{"front":"","back":"short answer"}]}');
+    var cs=(r.cards||[]).filter(function(c){return c.front&&c.back});cs.forEach(function(c){S.cards.push({id:uid(),f:c.front,b:c.back,subj:t,box:0,due:Date.now()})});save();toast('Added '+cs.length+' cards.');}
+  catch(e){aiErr(e)}render();
+}
+function startCardQuiz(){
+  var pool=shuffle(S.cards).slice(0,10);
+  var qs=pool.map(function(c){var others=shuffle(S.cards.filter(function(x){return x.id!==c.id&&x.b!==c.b})).slice(0,3).map(function(x){return x.b});
+    var o=shuffle(others.concat([c.b]));return {q:c.f,o:o,a:o.indexOf(c.b),e:'Answer: '+c.b}});
+  qs=qs.filter(function(q){return q.o.length>=2});
+  if(!qs.length)return toast('Add more cards with different answers.');
+  ui.quiz={qs:qs,i:0,score:0,pick:null,topic:'My flashcards'};render();
+}
+async function startAIQuiz(){
+  var t=$('#qt').value.trim(),n=$('#qn').value;if(!t)return toast('Type a topic.');
+  var b=$('[data-act=aiQuiz]');b.disabled=true;b.textContent='Making quiz…';
+  try{var r=await askJSON('Write '+n+' multiple-choice questions on "'+t+'" for a university exam. Each has 4 options and exactly one correct answer. Return JSON: {"questions":[{"q":"","options":["","","",""],"answer":0,"explain":"one short sentence"}]} where answer is the index 0-3 of the correct option.');
+    var qs=(r.questions||[]).filter(function(q){return q.q&&q.options&&q.options.length>=2&&q.answer>=0&&q.answer<q.options.length}).map(function(q){return {q:q.q,o:q.options,a:q.answer,e:q.explain}});
+    if(!qs.length)throw new Error('empty');ui.quiz={qs:qs,i:0,score:0,pick:null,topic:t};}
+  catch(e){aiErr(e)}render();
+}
+async function backup(){
+  if(!DL)return toast('Downloads are not available here. Open the app from your Claude link.');
+  try{await DL.save({filename:'edumindai-backup.json',data:JSON.stringify(S)});toast('Backup saved.')}catch(e){if(!(e&&e.code==='declined'))toast('Could not save the backup.')}
+}
+
+/* ---------- safety net: a script error never leaves a blank page ---------- */
+window.addEventListener('error',function(e){var v=$('#view');if(v&&!v.innerHTML.trim())v.innerHTML='<div class="card"><h2>Could not start</h2><p>'+esc(e.message||'Unknown error')+'</p></div>'});
+applyTheme();render();
+})();
+</script>
+</body>
+</html>
